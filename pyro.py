@@ -22,19 +22,22 @@ params = {
     "n_iter"      : 5000,
     "iter_to_avg" : 200,
     "diag_shift"  : 0.1,
-    "n_samples"   : 1008,
+    "n_samples"   : 5120,
     "learning_rate" : 0.01,
     "verbose"     : True,
 #   "observables" : [],
 }
 
 #"""
-for i in range(3):
-    params["model_type"] = "Jastrow"
-    model = Model( params )
-    results = model.run( learning_rate = { "Phase": [0.005, 0.00001]} )
-    data += [ results ]
-    print( data )
+for n_samples in [ 1024, 2048, 5120, 10240 ]:
+    for i in range(3):
+        params["model_type"] = "Jastrow"
+        params["n_samples"] = n_samples
+        params["earlystopping"] = {"min_delta": 0.0001, "patience": 100}
+        model = Model( params )
+        results = model.run( learning_rate = { "Phase": [0.05, 0.00001]} )
+        data += [ results ]
+        print( data )
 #"""
 
 """
