@@ -11,13 +11,13 @@ def dataprint( data ):
     print( "]" )
 
 params = {
-    "logdir"      : "./log/1d80",
-    "figdir"      : "./fig/1d80",
+    "logdir"      : "./log/n",
+    "figdir"      : "./fig/n",
     "n_dim"       : 1,
     "L"           : 80,
     "lattice"     : "hypercube",
     "pbc"         : True,
-    "scaling"     : 1000,
+    "scaling"     : 100,
     "hamiltonian" : "heisenberg",
     #"h"           : 1.0,
     #"j1"          : 1.00,
@@ -25,7 +25,7 @@ params = {
     #"lambda"      : 1,
     "model_type"  : "RBM",
     "alpha"       : 1,
-    "n_iter"      : 10000,
+    "n_iter"      : 3000,
     "iter_to_avg" : 50,
     "diag_shift"  : 0.1,
     "n_samples"   : 1008,
@@ -37,17 +37,21 @@ params = {
 
 """
 params["n_iter"] = 1000
-for alpha in [ 1, 2, 4, 8 ]:
-    for i in range(3):
-        params["model_type"] = "SymmRBM"
+for alpha in [ 1, 2, 4 ]:
+    for i in range(1):
+        params["earlystopping"] = {"min_delta": 0.001, "patience": 100}
+        params["model_type"] = "RBM"
         params["alpha"] = alpha
+        params["n_samples"] = 5008
+        params["L"] = 20
+        params["scaling"] = 1000
         model = Model( params )
-        results = model.run( learning_rate = {"Phase": [0.01, 0.001]}, name="/SymmRBM-alpha"+str(alpha) )
+        results = model.run( learning_rate = {"Phase": [0.005, 0.0001]}, name="/SymmRBM-alpha"+str(alpha) )
         data += [ results ]
         print( data )
 #"""
 
-#"""
+"""
 for alpha in [ 4 ]:
     for i in range(3):
         params["model_type"] = "RBM"
@@ -55,7 +59,6 @@ for alpha in [ 4 ]:
         params["n_iter"] = 2000
         params["n_samples"] = 5008
         params["earlystopping"] = {"min_delta": 0.001, "patience": 200}
-        params["scaling"] = 100
         model = Model( params )
         name = lambda params : "/RBM-alpha" + str(params["alpha"]) + "-scaling" + str(params["scaling"]) + "-"
         results = model.run( learning_rate = {"Phase": [0.1, 0.001]}, name=name(params) )
@@ -74,17 +77,21 @@ for i in range(2):
 #"""
 
 """
-for alpha in [ 4 ]:
-    for L in range( 40, 60, 2 ):
-        for i in range(3):
-            params["model_type"] = "Jastrow"
-            params["earlystopping"] = {"min_delta": 0.001, "patience": 100}
+for alpha in [ 1, 2, 4 ]:
+    for L in [ 80 ]:
+        didWork = 0
+        while didWork < 3:
+            params["model_type"] = "SymmRBM"
+            name = "/SymmRBM" + "-alpha-" + str(alpha)
+            params["n_samples"] = 1008
+            params["earlystopping"] = {"min_delta": 0.1, "patience": 200}
             params["alpha"] = alpha
             params["L"] = L
             model = Model( params )
-            results = model.run( learning_rate = {"Phase": [0.01, 0.00001]}, name="/Jastrow-alpha"+"L-"+str(L) )
-            if results["out"]["E_mean"] < -0.44:
+            results = model.run( learning_rate={"Phase":[0.01, 0.0001]}, name=name )
+            if results["out"]["E_mean"] < -0.442:
                 data += [ results ]
+                didWork += 1
             dataprint( data )
 #"""
 
@@ -115,8 +122,9 @@ for alpha in [ 1, 2, 4 ]:
 name = lambda params : "/GCNN" + str(params["alpha"])
 params["model_type"] = "GCNN"
 for i in range( 5 ):
+    params["earlystopping"] = {"min_delta": 0.1, "patience": 200}
     model = Model( params )
-    results = model.run( learning_rate = {"Phase": [0.1, 0.00001]}, name=name(params), feature_dims=(4,16,16) )
+    results = model.run( learning_rate = {"Phase": [0.1, 0.00001]}, name=name(params), feature_dims=(4,8,16) )
     data += [ results ]
     print( data )
 #"""
